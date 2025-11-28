@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cinematic Neon Racing Speedometer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Arial', sans-serif;
+    perspective: 1000px;
+  }
+
+  /* Animated racing road background */
+  .background {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, #001122 0%, #000000 100%);
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .road {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      #111 0px,
+      ,
+      #111 80px,
+      #ff2222 80px,
+      #ff2222 100px
+    );
+    animation: roadMove 0.8s linear infinite;
+  }
+
+  @keyframes roadMove {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-100px); }
+  }
+
+  .speedometer-container {
+    position: relative;
+    width: 500px;
+    height: 500px;
+    z-index: 10;
+  }
+
+  .speedometer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Outer glow ring */
+  .outer-ring {
+    position: absolute;
+    width: 480px;
+    height: 480px;
+    top: 10px;
+    left: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, transparent 45%, #ff0000 70%, #000 100%);
+    box-shadow: 
+      0 0 60px #ff0000,
+      inset 0 0 60px #ff0000;
+    animation: pulse 4s infinite alternate;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 60px #ff0000, inset 0 0 60px #ff0000; }
+    100% { box-shadow: 0 0 100px #ff2200, inset 0 0 100px #ff2200; }
+  }
+
+  /* Main gauge face */
+  .gauge {
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    top: 40px;
+    left: 40px;
+    background: radial-gradient(circle, #111 0%, #000 100%);
+    border-radius: 50%;
+    box-shadow: 
+      inset 0 0 80px #000,
+      0 0 40px rgba(255,0,0,0.6);
+    overflow: hidden;
+  }
+
+  /* Neon tick marks */
+  .ticks {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
+  .tick {
+    position: absolute;
+    width: 4px;
+    height: 30px;
+    background: linear-gradient(to top, #ff0000, #ff4444);
+    left: 50%;
+    top: 20px;
+    transform-origin: 50% 190px;
+    border-radius: 2px;
+    box-shadow: 0 0 15px #ff0000;
+  }
+
+  .tick.major {
+    height: 50px;
+    width: 6px;
+    box-shadow: 0 0 25px #ff0000;
+  }
+
+  /* Speed numbers */
+  .number {
+    position: absolute;
+    color: #ff3333;
+    font-size: 28px;
+    font-weight: bold;
+    text-shadow: 0 0 20px #ff0000;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Needle */
+  .needle-base {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 30px #ff0000;
+    z-index: 20;
+  }
+
+  .needle {
+    position: absolute;
+    width: 6px;
+    height: 240px;
+    background: linear-gradient(to top, #ff0000, #ffffff);
+    top: 50%;
+    left: 50%;
+    transform-origin: bottom center;
+    border-radius: 3px;
+    box-shadow: 0 0 20px #ff0000;
+    z-index: 15;
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+
+  /* Digital speed display */
+  .digital {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 60px;
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow: 0 0 30px #ff0000;
+    letter-spacing: 8px;
+    z-index: 20;
+  }
+
+ 20;
+  }
+
+  .unit {
+    font-size: 24px;
+    opacity: 0.8;
+  }
+
+  /* Particle speed lines */
+  .particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .particle {
+    position: absolute;
+    width: 4px;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, #ff4444);
+    opacity: 0;
+    animation: fly 2s linear infinite;
+  }
+
+  @keyframes fly {
+    0% { opacity: 0; transform: translateY(0) scaleY(0); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-800px) scaleY(3); }
+  }
+</style>
+</head>
+<body>
+
+<div class="background">
+  <div class="road"></div>
+</div>
+
+<div class="speedometer-container">
+  <div class="outer-ring"></div>
+  <div class="gauge">
+    <div class="ticks" id="ticks"></div>
+    <div class="needle-base"></div>
+    <div class="needle" id="needle"></div>
+    <div class="digital" id="digital">000 <span class="unit">km/h</span></div>
+  </div>
+  <div class="particles" id="particles"></div>
+</div>
+
+<script>
+// Generate tick marks and numbers
+const ticksContainer = document.getElementById('ticks');
+const totalTicks = 24;
+const maxSpeed = 300;
+
+for (let i = 0; i <= totalTicks; i++) {
+  const angle = (i / totalTicks) * 270 - 135; // 270° arc from -135° to 135°
+  const tick = document.createElement('div');
+  tick.className = 'tick' + (i % 3 === 0 ? ' major' : '');
+  tick.style.transform = `rotate(${angle}deg)`;
+  ticksContainer.appendChild(tick);
+
+  );
+
+  // Add numbers every 3 ticks
+  if (i % 3 === 0) {
+    const num = document.createElement('div');
+    num.className = 'number';
+    const speedValue = Math.round((i / totalTicks) * maxSpeed / 10) * 10;
+    num.textContent = speedValue;
+    const rad = (angle * Math.PI) / 180;
+    const radius = 160;
+    num.style.left = `50%`;
+    num.style.top = `50%`;
+    num.style.transform = `translate(calc(-50% + ${Math.cos(rad) * radius}px), calc(-50% + ${Math.sin(rad) * radius}px)) rotate(${angle + 135}deg)`;
+    ticksContainer.appendChild(num);
+  }
+}
+
+// Needle animation loop
+const needle = document.getElementById('needle');
+const digital = document.getElementById('digital');
+let currentSpeed = 0;
+let targetSpeed = 0;
+let accelerating = true;
+
+function updateSpeed() {
+  // Smooth acceleration / deceleration cycle
+  if (accelerating) {
+    targetSpeed += 2;
+    if (targetSpeed >= 280) accelerating = false;
+  } else {
+    targetSpeed -= 1.5;
+    if (targetSpeed <= 0) accelerating = true;
+  }
+
+  // Smooth needle movement
+  currentSpeed += (targetSpeed - currentSpeed) * 0.08;
+  const angle = (currentSpeed / maxSpeed) * 270 - 135;
+  needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+
+  // Update digital display
+  digital.innerHTML = Math.round(currentSpeed).toString().padStart(3, '0') + ' <span class="unit">km/h</span>';
+  
+  requestAnimationFrame(updateSpeed);
+}
+
+updateSpeed();
+
+// Add speed particles
+const particlesContainer = document.getElementById('particles');
+setInterval(() => {
+  if (currentSpeed > 100) {
+    for (let i = 0; i < 3; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = Math.random() * 0.5 + 's';
+      p.style.animationDuration = (1 + Math.random()) + 's';
+      particlesContainer.appendChild(p);
+      setTimeout(() => p.remove(), 3000);
+    }
+  }
+}, 200);
+</script>
+
+</body>
+</html>

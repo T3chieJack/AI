@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinematic Racing Speedometer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Load Inter font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        :root {
+            --primary-red: #ff003c;
+            --secondary-black: #1a1a1a;
+            --dark-background: #0d0d0d;
+            --neon-glow: 0 0 5px var(--primary-red), 0 0 10px var(--primary-red), 0 0 20px rgba(255, 0, 60, 0.7);
+            --needle-color: #f7e034;
+            --needle-shadow: 0 0 10px #f7e034;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevent scroll from background animation */
+        }
+
+        /* Cinematic Background Effect (Simulates motion) */
+        .cinematic-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%; /* Wider than viewport for parallax/motion effect */
+            height: 100%;
+            /* Diagonal dark lines for speed/road effect */
+            background-image: repeating-linear-gradient(
+                -45deg,
+                var(--secondary-black) 0,
+                var(--secondary-black) 2px,
+                var(--dark-background) 2px,
+                var(--dark-background) 40px
+            );
+            animation: moveBackground 15s linear infinite;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        @keyframes moveBackground {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .speedometer-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #2e2e2e 0%, var(--secondary-black) 60%, var(--dark-background) 100%);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            border: 5px solid var(--primary-red);
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .speedometer-dial {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        /* Needle Styling */
+        .needle {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            width: 50%;
+            height: 5px;
+            transform-origin: 0% 50%;
+            /* Initial rotation for 0 MPH (135 degrees offset from vertical) */
+            transform: rotate(135deg);
+            background-color: var(--needle-color);
+            box-shadow: var(--needle-shadow);
+            z-index: 10;
+            transition: transform 0.1s linear; /* Smooth movement */
+        }
+
+        .needle::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -10px;
+            width: 10px;
+            height: 9px;
+            background: var(--needle-color);
+            border-radius: 50%;
+            box-shadow: var(--needle-shadow);
+        }
+
+        .center-pin {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--primary-red);
+            border: 4px solid var(--needle-color);
+            box-shadow: var(--neon-glow), 0 0 15px var(--needle-color);
+            z-index: 15;
+        }
+
+        /* Tick Marks and Labels */
+        .tick-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        /* Function to generate dynamic tick marks (implemented in JS for complexity) 
+           Here is the base style for a tick */
+        .tick {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            transform-origin: 0 0;
+        }
+
+        .tick span {
+            position: absolute;
+            display: block;
+            background: var(--primary-red);
+            box-shadow: var(--neon-glow);
+            width: 2px;
+            height: 10px;
+            top: -190px;
+            left: -1px;
+            border-radius: 1px;
+        }
+
+        .tick-label {
+            position: absolute;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            text-shadow: var(--neon-glow);
+        }
+
+        /* Digital Speed Display */
+        .speed-display {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: var(--primary-red);
+            z-index: 20;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            border: 1px solid var(--primary-red);
+            box-shadow: var(--neon-glow);
+        }
+
+        #current-speed {
+            font-size: 4rem;
+            line-height: 1;
+            font-weight: 900;
+            color: var(--needle-color);
+            text-shadow: var(--needle-shadow), var(--neon-glow);
+        }
+
+        .units {
+            font-size: 1rem;
+            color: var(--primary-red);
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-900">
+
+    <div class="cinematic-background"></div>
+
+    <div class="speedometer-container rounded-full">
+        <h1 class="text-white text-xl font-bold text-center pt-4" style="text-shadow: var(--neon-glow);">NITRO BOOST</h1>
+        <div class="speedometer-dial">
+            
+            <!-- Dynamic Ticks and Labels will be inserted here by JavaScript -->
+            <div class="tick-container" id="tick-container"></div>
+            
+            <div class="needle" id="speed-needle"></div>
+            <div class="center-pin"></div>
+
+            <div class="speed-display">
+                <div id="current-speed">000</div>
+                <div class="units">MPH</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Speedometer Constants ---
+        const MIN_SPEED = 0;
+        const MAX_SPEED = 240;
+        const START_ANGLE = 135; // 0 MPH starting angle
+        const END_ANGLE = 45;    // 240 MPH ending angle (clockwise)
+        const ARC_ANGLE = 360 - (START_ANGLE - END_ANGLE); // 270 degrees arc
+        const CENTER_X = 200; // Half of container width (400px)
+        const CENTER_Y = 200; // Half of container height (400px)
+        const RADIUS = 160;
+
+        // --- DOM Elements ---
+        const needle = document.getElementById('speed-needle');
+        const speedDisplay = document.getElementById('current-speed');
+        const tickContainer = document.getElementById('tick-container');
+
+        // --- Animation State ---
+        let currentTime = 0;
+        let lastTime = 0;
+        let targetSpeed = 0;
+        let currentSpeed = 0;
+        const maxAcceleration = 80; // Max speed change per second
+        const maxDeceleration = 60;
+
+        /**
+         * Maps a speed value to the corresponding rotation angle for the needle.
+         * The angle goes from 135deg (0 MPH) to 405deg (240 MPH).
+         * @param {number} speed - The current speed value.
+         * @returns {number} The rotation angle in degrees.
+         */
+        function speedToAngle(speed) {
+            const ratio = (speed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED);
+            // Angle range is 135deg to 405deg (135 + 270)
+            return START_ANGLE + (ratio * ARC_ANGLE);
+        }
+
+        /**
+         * Generates the speedometer tick marks and labels.
+         */
+        function generateTicks() {
+            const majorTicks = 13; // 0, 20, 40, ..., 240
+            const step = (MAX_SPEED - MIN_SPEED) / (majorTicks - 1);
+            
+            for (let i = 0; i < majorTicks; i++) {
+                const speedValue = i * step;
+                const angle = speedToAngle(speedValue);
+
+                // 1. Create the Tick Mark (Red Glow)
+                const tickEl = document.createElement('div');
+                tickEl.className = 'tick';
+                tickEl.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+                
+                const span = document.createElement('span');
+                // Give special styling to the maximum speed tick
+                if (speedValue === MAX_SPEED) {
+                    span.style.boxShadow = '0 0 10px #00ffc8, 0 0 20px #00ffc8, 0 0 30px #00ffc8';
+                    span.style.backgroundColor = '#00ffc8';
+                    span.style.height = '15px';
+                }
+                tickEl.appendChild(span);
+                tickContainer.appendChild(tickEl);
+
+                // 2. Create the Label (Speed Number)
+                const labelEl = document.createElement('div');
+                labelEl.className = 'tick-label';
+                labelEl.textContent = speedValue;
+                
+                // Calculate position for the label (slightly outside the tick)
+                const labelAngleRad = (angle - 90) * (Math.PI / 180); // Adjust for CSS 0deg top
+                const labelX = CENTER_X + RADIUS * Math.cos(labelAngleRad);
+                const labelY = CENTER_Y + RADIUS * Math.sin(labelAngleRad);
+
+                // Center the label text around the calculated point
+                labelEl.style.left = `${labelX}px`;
+                labelEl.style.top = `${labelY}px`;
+                labelEl.style.transform = 'translate(-50%, -50%)';
+
+                // Give special styling to the maximum speed label
+                 if (speedValue === MAX_SPEED) {
+                    labelEl.style.color = '#00ffc8';
+                    labelEl.style.textShadow = '0 0 5px #00ffc8, 0 0 10px #00ffc8';
+                }
+                
+                tickContainer.appendChild(labelEl);
+            }
+        }
+
+        /**
+         * Randomly determines a new target speed for the needle to move towards.
+         */
+        function setNewTargetSpeed() {
+            // Target speed bounces between high and low ranges for a cinematic effect
+            const isHighSpeed = Math.random() > 0.5;
+            if (isHighSpeed) {
+                targetSpeed = Math.floor(Math.random() * (MAX_SPEED - 180) + 180); // High speed burst
+            } else {
+                targetSpeed = Math.floor(Math.random() * (100 - 50) + 50); // Cruising speed
+            }
+            // Ensure target is within min/max bounds
+            targetSpeed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, targetSpeed));
+        }
+
+
+        /**
+         * Main animation loop. Updates the speed and needle position smoothly.
+         * @param {number} timestamp - The current time in milliseconds.
+         */
+        function animateSpeedometer(timestamp) {
+            if (lastTime === 0) {
+                lastTime = timestamp;
+            }
+            const deltaTime = (timestamp - lastTime) / 1000; // Delta time in seconds
+            lastTime = timestamp;
+
+            // Check if we need a new target
+            if (Math.abs(currentSpeed - targetSpeed) < 1) {
+                setNewTargetSpeed();
+            }
+
+            // Determine speed change based on acceleration/deceleration limits
+            let speedDelta = targetSpeed - currentSpeed;
+            let maxChange = 0;
+
+            if (speedDelta > 0) {
+                // Accelerating
+                maxChange = maxAcceleration * deltaTime;
+            } else {
+                // Decelerating (or braking)
+                maxChange = maxDeceleration * deltaTime;
+            }
+
+            // Apply change, capping it at the max allowed change for smoothness
+            if (Math.abs(speedDelta) > maxChange) {
+                speedDelta = speedDelta > 0 ? maxChange : -maxChange;
+            }
+            
+            // Update the speed
+            currentSpeed += speedDelta;
+            
+            // Clamp speed to boundaries
+            currentSpeed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, currentSpeed));
+
+            // 1. Update Needle Rotation
+            const newAngle = speedToAngle(currentSpeed);
+            needle.style.transform = `rotate(${newAngle}deg)`;
+
+            // 2. Update Digital Display (Always show 3 digits)
+            const roundedSpeed = Math.round(currentSpeed);
+            speedDisplay.textContent = roundedSpeed.toString().padStart(3, '0');
+
+            requestAnimationFrame(animateSpeedometer);
+        }
+
+        // --- Initialization ---
+        window.onload = function() {
+            generateTicks();
+            setNewTargetSpeed(); // Start with an initial target speed
+            animateSpeedometer(0); // Start the main animation loop
+        };
+
+    </script>
+</body>
+</html>
